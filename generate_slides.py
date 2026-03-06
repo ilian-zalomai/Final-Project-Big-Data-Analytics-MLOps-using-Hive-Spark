@@ -1,56 +1,93 @@
 from pptx import Presentation
 from pptx.util import Inches, Pt
+from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 
-def create_presentation():
+# Official Purdue Brand Colors
+PURDUE_GOLD = RGBColor(206, 184, 136) # Old Gold
+PURDUE_BLACK = RGBColor(0, 0, 0)
+WHITE = RGBColor(255, 255, 255)
+
+def add_gold_accent(slide):
+    """Adds a Purdue Gold accent bar at the bottom of the slide."""
+    left = 0
+    top = Inches(7.2)
+    width = Inches(10)
+    height = Inches(0.3)
+    shape = slide.shapes.add_textbox(left, top, width, height)
+    fill = shape.fill
+    fill.solid()
+    fill.fore_color.rgb = PURDUE_GOLD
+
+def set_cell_background(cell, color):
+    """Helper to set background color of a table cell."""
+    fill = cell.fill
+    fill.solid()
+    fill.fore_color.rgb = color
+
+def create_purdue_presentation():
     prs = Presentation()
+    prs.slide_width = Inches(10)
+    prs.slide_height = Inches(7.5)
 
-    # --- Slide 1: Title Slide ---
-    slide_layout = prs.slide_layouts[0]
-    slide = prs.slides.add_slide(slide_layout)
-    title = slide.shapes.title
-    subtitle = slide.placeholders[1]
+    # --- SLIDE 1: TITLE SLIDE ---
+    slide = prs.slides.add_slide(prs.slide_layouts[0])
+    # Set background to black for a high-end look
+    background = slide.background
+    fill = background.fill
+    fill.solid()
+    fill.fore_color.rgb = PURDUE_BLACK
     
+    title = slide.shapes.title
     title.text = "Predictive Modeling of Flight Disruptions"
-    subtitle.text = "Integrating Spark MLlib & Weather Data\nPhase 4: Operational Strategy"
+    title.text_frame.paragraphs[0].font.color.rgb = PURDUE_GOLD
+    title.text_frame.paragraphs[0].font.bold = True
 
-    # --- Slide 2: Predictive Architecture ---
-    slide_layout = prs.slide_layouts[1]
-    slide = prs.slides.add_slide(slide_layout)
+    subtitle = slide.placeholders[1]
+    subtitle.text = "Integrating Spark MLlib & Weather Data\nPhase 4: Operational Strategy"
+    subtitle.text_frame.paragraphs[0].font.color.rgb = WHITE
+
+    # --- SLIDE 2: PREDICTIVE ARCHITECTURE ---
+    slide = prs.slides.add_slide(prs.slide_layouts[1])
+    add_gold_accent(slide)
+    
     title = slide.shapes.title
     title.text = "Phase 4: Predictive Architecture"
+    title.text_frame.paragraphs[0].font.color.rgb = PURDUE_BLACK
     
     body = slide.shapes.placeholders[1]
     tf = body.text_frame
-    tf.word_wrap = True
     p = tf.add_paragraph()
     p.text = (
-        "To address the complexities of high-volume flight data, we implemented a structured "
-        "Spark MLlib workflow using a decoupled Pipeline architecture. This system encapsulates "
-        "feature engineering—including VectorAssembler and StringIndexer—with sophisticated "
-        "Random Forest and Linear Regression models. By utilizing CrossValidator for hyperparameter "
-        "tuning, we ensured that the final model is both robust and scalable for production."
+        "To address the complexities of high-volume flight data, we implemented a "
+        "structured Spark MLlib workflow using a decoupled Pipeline architecture. "
+        "By utilizing CrossValidator for hyperparameter tuning, we ensured the final "
+        "model is both robust and scalable for enterprise production."
     )
-    p.font.size = Pt(18)
+    p.font.size = Pt(20)
+    p.space_after = Pt(14)
 
-    # --- Slide 3: Performance Table ---
-    slide = prs.slides.add_slide(prs.slide_layouts[5]) # Blank slide with title
-    slide.shapes.title.text = "Model Performance Metrics"
+    # --- SLIDE 3: PERFORMANCE TABLE ---
+    slide = prs.slides.add_slide(prs.slide_layouts[5])
+    add_gold_accent(slide)
+    slide.shapes.title.text = "Model Performance Summary"
     
     rows, cols = 6, 3
-    left = Inches(1.5)
-    top = Inches(2.0)
-    width = Inches(7.0)
-    height = Inches(0.8)
+    left, top = Inches(1), Inches(2)
+    width, height = Inches(8), Inches(0.6)
     
-    table = slide.shapes.add_table(rows, cols, left, top, width, height).table
+    table_shape = slide.shapes.add_table(rows, cols, left, top, width, height)
+    table = table_shape.table
     
-    # Set Column Headers
-    table.cell(0, 0).text = 'Metric'
-    table.cell(0, 1).text = 'Baseline'
-    table.cell(0, 2).text = 'Final (NN)'
-    
-    # Fill Data
+    # Header Styling
+    headers = ['Metric', 'Baseline', 'Final (NN)']
+    for i, h in enumerate(headers):
+        cell = table.cell(0, i)
+        cell.text = h
+        set_cell_background(cell, PURDUE_BLACK)
+        cell.text_frame.paragraphs[0].font.color.rgb = PURDUE_GOLD
+        cell.text_frame.paragraphs[0].font.bold = True
+
     data = [
         ("Accuracy (R²)", "0.82", "0.94"),
         ("False Alarms", "8.5%", "2.1%"),
@@ -63,25 +100,26 @@ def create_presentation():
         table.cell(i, 0).text = m
         table.cell(i, 1).text = b
         table.cell(i, 2).text = f
+        # Style the 'Final' column in Gold to highlight results
+        table.cell(i, 2).text_frame.paragraphs[0].font.bold = True
 
-    # --- Slide 4: Strategic Recommendations ---
+    # --- SLIDE 4: RECOMMENDATIONS ---
     slide = prs.slides.add_slide(prs.slide_layouts[1])
+    add_gold_accent(slide)
     slide.shapes.title.text = "Strategic Recommendations"
     
-    tf = slide.shapes.placeholders[1].text_frame
-    p = tf.add_paragraph()
+    body = slide.shapes.placeholders[1]
+    p = body.text_frame.add_paragraph()
     p.text = (
-        "The practical application of this model centers on a Dynamic High-Alert Protocol "
-        "that triggers when disruption probability exceeds 85%. By identifying specific "
-        "tipping points for wind and precipitation, airlines can pre-position recovery crews "
-        "and automate passenger communications at least two hours before a weather event hits. "
-        "This strategy transforms raw weather alerts into actionable operational windows."
+        "Implementing a Dynamic High-Alert Protocol at specific hubs allows for proactive "
+        "passenger communication when disruption probability exceeds 85%. This reduces "
+        "rebooking costs and improves passenger satisfaction by converting raw data "
+        "into a data-driven operational window."
     )
-    p.font.size = Pt(18)
+    p.font.size = Pt(20)
 
-    # Save the presentation
-    prs.save('Phase4_Presentation.pptx')
-    print("Presentation generated: Phase4_Presentation.pptx")
+    prs.save('Purdue_Flight_Analysis.pptx')
+    print("Boiler Up! Presentation saved as Purdue_Flight_Analysis.pptx")
 
 if __name__ == "__main__":
-    create_presentation()
+    create_purdue_presentation()
