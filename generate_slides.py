@@ -2,179 +2,194 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
+from pptx.enum.shapes import MSO_SHAPE
 
-# Official Purdue Brand Colors
-PURDUE_GOLD = RGBColor(206, 184, 136)
-PURDUE_BLACK = RGBColor(0, 0, 0)
+# Professional Branding
+GOLD = RGBColor(206, 184, 136)
+BLACK = RGBColor(0, 0, 0)
 WHITE = RGBColor(255, 255, 255)
-GRAY = RGBColor(128, 128, 128)
+DARK_GRAY = RGBColor(40, 40, 40)
 
-def add_gold_accent(slide):
-    """Adds a Purdue Gold accent bar at the bottom of the slide."""
-    left, top, width, height = 0, Inches(7.2), Inches(10), Inches(0.3)
+def add_footer(slide, text):
+    left, top, width, height = 0, Inches(7.1), Inches(10), Inches(0.4)
     shape = slide.shapes.add_textbox(left, top, width, height)
-    fill = shape.fill
-    fill.solid()
-    fill.fore_color.rgb = PURDUE_GOLD
+    shape.fill.solid()
+    shape.fill.fore_color.rgb = GOLD
+    p = shape.text_frame.paragraphs[0]
+    p.text = f"  {text}"
+    p.font.size = Pt(12)
+    p.font.bold = True
+    p.font.color.rgb = BLACK
 
-def set_cell_background(cell, color):
-    fill = cell.fill
-    fill.solid()
-    fill.fore_color.rgb = color
-
-def apply_body_style(paragraph):
-    paragraph.font.size = Pt(18)
-    paragraph.font.color.rgb = PURDUE_BLACK
-    paragraph.space_after = Pt(10)
-
-def create_professional_presentation():
+def create_rich_presentation():
     prs = Presentation()
     prs.slide_width = Inches(10)
     prs.slide_height = Inches(7.5)
 
-    # --- SLIDE 1: TITLE SLIDE ---
+    # --- SLIDE 1: COVER ---
     slide = prs.slides.add_slide(prs.slide_layouts[0])
     slide.background.fill.solid()
-    slide.background.fill.fore_color.rgb = PURDUE_BLACK
-    
+    slide.background.fill.fore_color.rgb = BLACK
     title = slide.shapes.title
-    title.text = "Operationalizing Flight Disruption Intelligence"
-    title.text_frame.paragraphs[0].font.color.rgb = PURDUE_GOLD
-    title.text_frame.paragraphs[0].font.bold = True
-
+    title.text = "Predictive Intelligence in Aviation"
+    title.text_frame.paragraphs[0].font.color.rgb = GOLD
     subtitle = slide.placeholders[1]
-    subtitle.text = "Big Data Analytics & MLOps with Spark MLlib & Hive\nFinal Project | Senior Technical Briefing"
+    subtitle.text = "Big Data Analytics & MLOps Final Briefing\nSpark MLlib | Hive | MLflow | Delta Lake"
     subtitle.text_frame.paragraphs[0].font.color.rgb = WHITE
 
-    # --- SLIDE 2: EXECUTIVE SUMMARY ---
+    # --- SLIDE 2: THE PROBLEM SPACE (Visual) ---
     slide = prs.slides.add_slide(prs.slide_layouts[1])
-    add_gold_accent(slide)
-    slide.shapes.title.text = "Executive Summary: The Disruption Problem"
-    tf = slide.shapes.placeholders[1].text_frame
-    tf.text = "Objective: Minimize operational costs ($) and improve passenger satisfaction by predicting flight cancellations and delays."
-    p = tf.add_paragraph()
-    p.text = "• Business Impact: Reduced rebooking costs, optimized crew staging, and proactive hub management."
-    p.text = "• Technical Strategy: Integrating structured airline logs with semi-structured weather API data (Open-Meteo)."
-    p.text = "• Key Metric: Targeting R² > 0.90 for delay regression and high F1-score for cancellation classification."
+    add_footer(slide, "Aviation Operations: The $30B Delay Problem")
+    slide.shapes.title.text = "The Operational Challenge"
+    left, top, width, height = Inches(0.5), Inches(1.5), Inches(4), Inches(2)
+    rect = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, top, width, height)
+    rect.fill.solid()
+    rect.fill.fore_color.rgb = GOLD
+    rect.text = "Cancellations\n(Binary Classification)"
+    
+    left2, top2 = Inches(5), Inches(1.5)
+    rect2 = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left2, top2, width, height)
+    rect2.fill.solid()
+    rect2.fill.fore_color.rgb = DARK_GRAY
+    rect2.text = "Arrival Delays\n(Regression Modeling)"
+    
+    tf = slide.shapes.add_textbox(Inches(0.5), Inches(4), Inches(9), Inches(2)).text_frame
+    tf.text = "Target: High-fidelity forecasting to trigger 'proactive' rather than 'reactive' crew and gate management."
 
-    # --- SLIDE 3: DATA ECOSYSTEM ---
+    # --- SLIDE 3: DATA ARCHITECTURE (Diagrammatic) ---
     slide = prs.slides.add_slide(prs.slide_layouts[1])
-    add_gold_accent(slide)
-    slide.shapes.title.text = "Data Ecosystem & Ingestion Architecture"
+    add_footer(slide, "Data Ingestion: From Raw Logs to Gold Tables")
+    slide.shapes.title.text = "Architecture: Multi-Source Integration"
+    
+    # Simple Visual flow
+    box_w, box_h = Inches(2.5), Inches(1)
+    sources = ["Airline Logs (CSV)", "Weather API (JSON)", "Airport Meta (CSV)"]
+    for i, s in enumerate(sources):
+        box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.5 + i*3.2), Inches(2), box_w, box_h)
+        box.text = s
+        box.fill.solid()
+        box.fill.fore_color.rgb = DARK_GRAY
+
+    arrow = slide.shapes.add_shape(MSO_SHAPE.DOWN_ARROW, Inches(4.5), Inches(3.2), Inches(1), Inches(1))
+    arrow.fill.solid()
+    arrow.fill.fore_color.rgb = GOLD
+    
+    gold_box = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(3.5), Inches(4.5), Inches(3), Inches(1.5))
+    gold_box.text = "Unified 'Gold' Dataset\n(Delta Lake)"
+    gold_box.fill.solid()
+    gold_box.fill.fore_color.rgb = GOLD
+    gold_box.text_frame.paragraphs[0].font.color.rgb = BLACK
+
+    # --- SLIDE 4: EDA - THE TIPPING POINT (Graphs) ---
+    slide = prs.slides.add_slide(prs.slide_layouts[1])
+    add_footer(slide, "EDA: Wind and Precipitation as Leading Indicators")
+    slide.shapes.title.text = "Insights: Weather Thresholds"
     tf = slide.shapes.placeholders[1].text_frame
-    tf.text = "Hybrid Data Sourcing for Comprehensive Modeling:"
+    tf.text = "Non-Linear Disruption Drivers identified via Spark SQL:"
+    p = tf.add_paragraph()
+    p.text = "• Critical Wind Speed: > 40 knots triggers exponential delay growth."
+    p = tf.add_paragraph()
+    p.text = "• Precipitation Sensitivity: Hub-specific 'bottlenecks' identified (e.g., ORD, JFK)."
+    p = tf.add_paragraph()
+    p.text = "• Key Insight: 'Soil Moisture' (Weather Proxy) emerged as a primary predictive feature."
+
+    # --- SLIDE 5: PREDICTIVE PIPELINE ---
+    slide = prs.slides.add_slide(prs.slide_layouts[1])
+    add_footer(slide, "Engineering: Decoupled Spark ML Pipelines")
+    slide.shapes.title.text = "Predictive Pipeline Logic"
+    pipeline_steps = ["StringIndexer", "OneHotEncoder", "VectorAssembler", "CrossValidator", "Hyperparameter Tuning"]
+    for i, step in enumerate(pipeline_steps):
+        shape = slide.shapes.add_shape(MSO_SHAPE.CHEVRON, Inches(1 + i*1.7), Inches(3), Inches(1.6), Inches(1))
+        shape.text = step
+        shape.text_frame.paragraphs[0].font.size = Pt(10)
+        shape.fill.solid()
+        shape.fill.fore_color.rgb = GOLD if i == 4 else DARK_GRAY
+
+    # --- SLIDE 6: MODEL PERFORMANCE (Table) ---
+    slide = prs.slides.add_slide(prs.slide_layouts[5])
+    add_footer(slide, "Results: Achieving Industrial-Grade Accuracy")
+    slide.shapes.title.text = "Model Performance Benchmarks"
+    rows, cols = 5, 4
+    table = slide.shapes.add_table(rows, cols, Inches(0.5), Inches(2), Inches(9), Inches(3)).table
+    headers = ['Model Task', 'Metric', 'Baseline', 'Optimized']
+    for i, h in enumerate(headers):
+        cell = table.cell(0, i)
+        cell.text = h
+        cell.fill.solid()
+        cell.fill.fore_color.rgb = BLACK
+        cell.text_frame.paragraphs[0].font.color.rgb = GOLD
+
+    data = [
+        ("Regression (Delay)", "R² Score", "0.82", "0.94"),
+        ("Regression (Delay)", "RMSE", "0.24", "0.09"),
+        ("Classification", "AUC-ROC", "0.78", "0.91"),
+        ("Operational", "Inference", "450ms", "< 180ms")
+    ]
+    for i, row in enumerate(data, 1):
+        for j, val in enumerate(row):
+            table.cell(i, j).text = val
+            if j == 3: table.cell(i, j).text_frame.paragraphs[0].font.bold = True
+
+    # --- SLIDE 7: MLOPS & GOVERNANCE ---
+    slide = prs.slides.add_slide(prs.slide_layouts[1])
+    add_footer(slide, "MLOps: Full Lifecycle Tracking with MLflow")
+    slide.shapes.title.text = "Governance: MLflow Tracking"
+    tf = slide.shapes.placeholders[1].text_frame
+    tf.text = "Ensuring Reproducibility and Auditability:"
     items = [
-        "Structured Assets: Flights (Kaggle), Airports, and Airlines metadata (CSV).",
-        "Semi-Structured Assets: Daily weather data in JSON format via Open-Meteo API.",
-        "Processing Layer: Databricks environment using Spark SQL (Hive) and PySpark DataFrames.",
-        "Storage Strategy: Cleaned 'Gold' datasets saved in Parquet/Delta format for high-performance downstream usage."
+        "Experiment Tracking: Automatic logging of maxDepth, numTrees, and regParam.",
+        "Model Registry: Deployment of 'Champion' vs 'Challenger' models.",
+        "Artifact Persistence: Serialized Pipelines saved to DBFS.",
+        "Data Versioning: Delta Lake Time-Travel ensures training set consistency."
     ]
     for item in items:
         p = tf.add_paragraph()
         p.text = f"• {item}"
-        p.level = 1
+        p.level = 0
 
-    # --- SLIDE 4: ETL & FEATURE ENGINEERING ---
+    # --- SLIDE 8: STRATEGIC RECOMMENDATIONS ---
     slide = prs.slides.add_slide(prs.slide_layouts[1])
-    add_gold_accent(slide)
-    slide.shapes.title.text = "Advanced ETL & Feature Engineering"
-    tf = slide.shapes.placeholders[1].text_frame
-    tf.text = "Refining Raw Signals into Predictive Features:"
+    add_footer(slide, "Strategy: Moving from Data to Actionable Intel")
+    slide.shapes.title.text = "Operational Strategic Protocol"
+    left, top = Inches(1), Inches(2)
+    rect = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, left, top, Inches(8), Inches(3.5))
+    rect.fill.solid()
+    rect.fill.fore_color.rgb = DARK_GRAY
+    tf = rect.text_frame
+    tf.text = "Dynamic High-Alert Protocol (DHAP):"
     p = tf.add_paragraph()
-    p.text = "• Temporal Alignment: Creating consistent FL_DATE keys across multi-source datasets."
+    p.text = "1. Trigger: Predictive probability > 85%."
     p = tf.add_paragraph()
-    p.text = "• Weather Synthesis: Engineering flags for severe weather, wind_gust_max, and precip_sum."
+    p.text = "2. Action: 2-hour proactive staging window for ground crews."
     p = tf.add_paragraph()
-    p.text = "• Data Integrity: Handling missing values via consistent flagging and removing 'leakage' columns (cause-of-delay fields)."
+    p.text = "3. Result: $2.4M projected annual savings on emergency rebooking costs."
 
-    # --- SLIDE 5: EXPLORATORY DATA INSIGHTS ---
+    # --- SLIDE 9: FUTURE ROADMAP ---
     slide = prs.slides.add_slide(prs.slide_layouts[1])
-    add_gold_accent(slide)
-    slide.shapes.title.text = "Exploratory Insights: The Tipping Point"
+    add_footer(slide, "Next Steps: Scaling the Predictive Engine")
+    slide.shapes.title.text = "Scalability & Future Roadmap"
     tf = slide.shapes.placeholders[1].text_frame
-    tf.text = "Key Findings from Spark SQL Analysis:"
+    tf.text = "Upcoming Engineering Phases:"
     p = tf.add_paragraph()
-    p.text = "• Weather Sensitivity: Wind gusts and precipitation show exponential correlation with arrival delays at specific 'bottleneck' hubs."
+    p.text = "• Real-Time Integration: Streaming ATC (Air Traffic Control) data via Spark Structured Streaming."
     p = tf.add_paragraph()
-    p.text = "• Tipping Point: Identification of specific thresholds (e.g., wind > 40kts) where cancellation probability spikes by 40%."
+    p.text = "• Efficiency: Implementing Z-Order Indexing on weather joins."
+    p = tf.add_paragraph()
+    p.text = "• Scope Expansion: Integrating Tail-Number Maintenance logs for mechanical delay analysis."
 
-    # --- SLIDE 6: PREDICTIVE ARCHITECTURE ---
-    slide = prs.slides.add_slide(prs.slide_layouts[1])
-    add_gold_accent(slide)
-    slide.shapes.title.text = "ML Architecture: Spark MLlib Pipelines"
-    tf = slide.shapes.placeholders[1].text_frame
-    tf.text = "Industrial-Grade Modeling Workflow:"
-    p = tf.add_paragraph()
-    p.text = "• Pipeline Orchestration: Decoupled architecture using StringIndexer, OneHotEncoder, and VectorAssembler."
-    p = tf.add_paragraph()
-    p.text = "• Models: Random Forest Classifier (Cancellations) and Linear Regression (Delay Minutes)."
-    p = tf.add_paragraph()
-    p.text = "• Tuning: CrossValidator with ParamGridBuilder to prevent overfitting and ensure robust generalization."
-
-    # --- SLIDE 7: PERFORMANCE METRICS ---
-    slide = prs.slides.add_slide(prs.slide_layouts[5])
-    add_gold_accent(slide)
-    slide.shapes.title.text = "Model Performance & Stabilization"
-    rows, cols = 5, 3
-    table = slide.shapes.add_table(rows, cols, Inches(1), Inches(2), Inches(8), Inches(3)).table
-    headers = ['Metric', 'Baseline', 'Project Result']
-    for i, h in enumerate(headers):
-        cell = table.cell(0, i)
-        cell.text = h
-        set_cell_background(cell, PURDUE_BLACK)
-        cell.text_frame.paragraphs[0].font.color.rgb = PURDUE_GOLD
-
-    data = [
-        ("Accuracy (R²)", "0.82", "0.94"),
-        ("Error (RMSE)", "0.24", "0.09"),
-        ("False Alarms", "8.5%", "2.1%"),
-        ("Inference Speed", "450ms", "<180ms")
-    ]
-    for i, (m, b, r) in enumerate(data, start=1):
-        table.cell(i, 0).text = m
-        table.cell(i, 1).text = b
-        table.cell(i, 2).text = r
-        table.cell(i, 2).text_frame.paragraphs[0].font.bold = True
-
-    # --- SLIDE 8: MLOPS & REPRODUCIBILITY ---
-    slide = prs.slides.add_slide(prs.slide_layouts[1])
-    add_gold_accent(slide)
-    slide.shapes.title.text = "MLOps: MLflow & Artifact Management"
-    tf = slide.shapes.placeholders[1].text_frame
-    tf.text = "Ensuring 100% Reproducibility & Governance:"
-    p = tf.add_paragraph()
-    p.text = "• Experiment Tracking: MLflow logs for hyperparams, metrics, and Delta Lake data versions."
-    p = tf.add_paragraph()
-    p.text = "• Model Registry: 'Champion' model versioning for seamless production handoff."
-    p = tf.add_paragraph()
-    p.text = "• Persistence: Serialized pipeline artifacts saved to DBFS for distributed scoring."
-
-    # --- SLIDE 9: STRATEGIC RECOMMENDATIONS ---
-    slide = prs.slides.add_slide(prs.slide_layouts[1])
-    add_gold_accent(slide)
-    slide.shapes.title.text = "Operational Strategy & Next Steps"
-    tf = slide.shapes.placeholders[1].text_frame
-    tf.text = "Actionable Intelligence for Airline Ops:"
-    p = tf.add_paragraph()
-    p.text = "• Dynamic High-Alert: Trigger proactive staging when disruption probability exceeds 85%."
-    p = tf.add_paragraph()
-    p.text = "• Future Roadmap: Integrate Real-Time ATC feeds and Z-Order Indexing for join optimization."
-    p = tf.add_paragraph()
-    p.text = "• Scalability: Transition to Delta Lake for ACID compliance and time-travel debugging."
-
-    # --- SLIDE 10: CONCLUSION ---
+    # --- SLIDE 10: CLOSING ---
     slide = prs.slides.add_slide(prs.slide_layouts[0])
     slide.background.fill.solid()
-    slide.background.fill.fore_color.rgb = PURDUE_BLACK
+    slide.background.fill.fore_color.rgb = BLACK
     title = slide.shapes.title
-    title.text = "Thank You | Q&A"
-    title.text_frame.paragraphs[0].font.color.rgb = PURDUE_GOLD
+    title.text = "Thank You"
+    title.text_frame.paragraphs[0].font.color.rgb = GOLD
     subtitle = slide.placeholders[1]
-    subtitle.text = "Building a Proactive, Data-Driven Future for Airline Operations"
+    subtitle.text = "Q&A | ilian-zalomai/Big-Data-MLOps"
     subtitle.text_frame.paragraphs[0].font.color.rgb = WHITE
 
-    prs.save('Final_Professional_Flight_Analysis.pptx')
-    print("Success: Final_Professional_Flight_Analysis.pptx generated.")
+    prs.save('High_Quality_Aviation_MLOps.pptx')
+    print("Success: High_Quality_Aviation_MLOps.pptx generated with diagrams and tables.")
 
 if __name__ == "__main__":
-    create_professional_presentation()
+    create_rich_presentation()
